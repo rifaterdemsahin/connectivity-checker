@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connectivity Checker & Tailscale DNS Post-Mortem</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    pre code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen">
+
+  <!-- Navigation Bar -->
+  <header class="sticky top-0 z-50 backdrop-blur-md bg-slate-950/80 border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-teal-500/20">
+          <i class="fa-solid fa-network-wired text-white text-lg"></i>
+        </div>
+        <div>
+          <span class="font-bold text-lg text-white tracking-tight">Connectivity Checker</span>
+          <span class="hidden sm:inline-block ml-2 px-2 py-0.5 text-xs font-semibold bg-teal-500/10 text-teal-400 border border-teal-500/30 rounded-full">Incident Post-Mortem & Tool</span>
+        </div>
+      </div>
+      <nav class="hidden md:flex items-center space-x-6 text-sm font-medium text-slate-300">
+        <a href="#story" class="hover:text-teal-400 transition-colors">The Incident</a>
+        <a href="#breakdown" class="hover:text-teal-400 transition-colors">scutil Breakdown</a>
+        <a href="#decision-tree" class="hover:text-teal-400 transition-colors">Decision Tree</a>
+        <a href="#scripts" class="hover:text-teal-400 transition-colors">Diagnostic Script</a>
+        <a href="#prevention" class="hover:text-teal-400 transition-colors">Permanent Fix</a>
+      </nav>
+      <div class="flex items-center space-x-3">
+        <a href="https://github.com/rifaterdemsahin/connectivity-checker" target="_blank" class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition-all shadow-sm">
+          <i class="fa-brands fa-github text-sm"></i>
+          <span>GitHub Repo</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="relative pt-12 pb-16 overflow-hidden border-b border-slate-800/80 bg-gradient-to-b from-slate-900/50 to-slate-950">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-3xl mx-auto">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold mb-6">
+          <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+          <span>Post-Mortem: Tailscale MagicDNS Hijack & Layer 3 vs Layer 7 Triage</span>
+        </div>
+        <h1 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight mb-6">
+          "Internet is down... but <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400">1.1.1.1 works?</span>"
+        </h1>
+        <p class="text-slate-400 text-base sm:text-lg leading-relaxed mb-8">
+          A real-world debugging investigation where DNS queries timed out across all applications while raw TCP/IP routing was 100% operational. Uncovering how Tailscale's virtual network interface (<code class="text-teal-300 font-mono">utun5</code>) silently seized system resolver priority (<code class="text-teal-300 font-mono">order 104200</code>) on macOS.
+        </p>
+
+        <!-- Quick Action Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-left max-w-2xl mx-auto">
+          <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-xl">
+            <div class="text-xs text-slate-400 font-semibold uppercase mb-1">Layer 3 (IP Routing)</div>
+            <div class="text-emerald-400 font-bold flex items-center space-x-2">
+              <i class="fa-solid fa-circle-check"></i>
+              <span>1.1.1.1:443 UP</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">TCP connection succeeded</p>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-xl">
+            <div class="text-xs text-slate-400 font-semibold uppercase mb-1">Layer 7 (DNS Resolver)</div>
+            <div class="text-rose-400 font-bold flex items-center space-x-2">
+              <i class="fa-solid fa-circle-xmark"></i>
+              <span>google.com TIMED OUT</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">getaddrinfo failed</p>
+          </div>
+          <div class="bg-slate-900/80 border border-slate-800 p-4 rounded-xl">
+            <div class="text-xs text-slate-400 font-semibold uppercase mb-1">Root Culprit</div>
+            <div class="text-amber-400 font-bold flex items-center space-x-2">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+              <span>utun5 (MagicDNS)</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Order 104200 override</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Incident Timeline & Deep Dive -->
+  <section id="story" class="py-16 border-b border-slate-800/80 bg-slate-950">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">The Detective Story Step-by-Step</h2>
+        <p class="text-slate-400 text-sm mt-2">How the diagnostic breadcrumbs led directly from symptom to root cause</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- Step timeline -->
+        <div class="lg:col-span-6 space-y-6">
+          
+          <!-- Step 1 -->
+          <div class="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 hover:border-slate-700 transition-all">
+            <div class="flex items-center space-x-3 mb-2">
+              <span class="w-7 h-7 rounded-lg bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center font-mono font-bold text-xs">1</span>
+              <h3 class="text-base font-bold text-white">The Outage Symptoms</h3>
+            </div>
+            <p class="text-sm text-slate-400 mb-3">
+              Commands like <code class="text-slate-200 font-mono text-xs bg-slate-800 px-1 py-0.5 rounded">nslookup google.com</code> and <code class="text-slate-200 font-mono text-xs bg-slate-800 px-1 py-0.5 rounded">dig api.anthropic.com</code> completely timed out. Websites would not load in browsers.
+            </p>
+            <div class="p-3 bg-black/60 rounded-lg font-mono text-xs text-rose-300 border border-rose-900/40">
+              ;; connection timed out; no servers could be reached
+            </div>
+          </div>
+
+          <!-- Step 2 -->
+          <div class="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 hover:border-slate-700 transition-all">
+            <div class="flex items-center space-x-3 mb-2">
+              <span class="w-7 h-7 rounded-lg bg-teal-500/20 text-teal-400 border border-teal-500/30 flex items-center justify-center font-mono font-bold text-xs">2</span>
+              <h3 class="text-base font-bold text-white">The Eureka Clue: IP vs Domain</h3>
+            </div>
+            <p class="text-sm text-slate-400 mb-3">
+              Testing direct TCP connection to IP <code class="text-teal-300 font-mono text-xs">1.1.1.1</code> succeeded instantly. But testing hostname <code class="text-rose-300 font-mono text-xs">google.com</code> failed on <code class="text-slate-200 font-mono text-xs">getaddrinfo</code>.
+            </p>
+            <div class="p-3 bg-black/60 rounded-lg font-mono text-xs text-slate-300 border border-slate-800 space-y-1">
+              <div class="text-emerald-400">$ nc -zv 1.1.1.1 443 → Connection succeeded!</div>
+              <div class="text-rose-400">$ nc -zv google.com 443 → getaddrinfo: nodename nor servname provided</div>
+            </div>
+          </div>
+
+          <!-- Step 3 -->
+          <div class="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 hover:border-slate-700 transition-all">
+            <div class="flex items-center space-x-3 mb-2">
+              <span class="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center font-mono font-bold text-xs">3</span>
+              <h3 class="text-base font-bold text-white">The Red Herring: Wi-Fi DNS Settings</h3>
+            </div>
+            <p class="text-sm text-slate-400 mb-3">
+              Running <code class="text-slate-200 font-mono text-xs bg-slate-800 px-1 py-0.5 rounded">sudo networksetup -setdnsservers "Wi-Fi" 1.1.1.1 8.8.8.8</code> did not fix the problem because macOS uses a dynamic resolver hierarchy managed by <code class="text-slate-200 font-mono text-xs">scutil</code> rather than standard Wi-Fi adapter DNS when VPN tunnels are active.
+            </p>
+          </div>
+
+          <!-- Step 4 -->
+          <div class="p-5 rounded-2xl bg-slate-900/70 border border-teal-500/40 bg-teal-950/10 transition-all">
+            <div class="flex items-center space-x-3 mb-2">
+              <span class="w-7 h-7 rounded-lg bg-teal-500 text-slate-950 flex items-center justify-center font-mono font-bold text-xs">4</span>
+              <h3 class="text-base font-bold text-teal-300">The Unmasking via `scutil --dns`</h3>
+            </div>
+            <p class="text-sm text-slate-300 mb-3">
+              <code class="text-teal-300 font-mono text-xs">scutil --dns</code> exposed that Tailscale's <code class="text-amber-300 font-mono text-xs">utun5</code> virtual adapter had registered <code class="text-amber-300 font-mono text-xs">100.95.0.251-254</code> as <strong>Resolver #1 with Order 104200</strong>, forcing all DNS queries through Tailscale's MagicDNS.
+            </p>
+          </div>
+
+          <!-- Step 5 -->
+          <div class="p-5 rounded-2xl bg-emerald-950/20 border border-emerald-500/40 transition-all">
+            <div class="flex items-center space-x-3 mb-2">
+              <span class="w-7 h-7 rounded-lg bg-emerald-500 text-slate-950 flex items-center justify-center font-mono font-bold text-xs">5</span>
+              <h3 class="text-base font-bold text-emerald-300">The Fix & Instant Recovery</h3>
+            </div>
+            <p class="text-sm text-slate-300 mb-2">
+              Toggling Tailscale OFF in the macOS menubar UI immediately destroyed the <code class="text-slate-200 font-mono text-xs">utun5</code> interface, unregistering Resolver #1. Standard Wi-Fi DNS resumed, and <code class="text-emerald-400 font-mono text-xs">nc -zv google.com 443</code> succeeded right away!
+            </p>
+          </div>
+
+        </div>
+
+        <!-- Terminal Inspector -->
+        <div class="lg:col-span-6 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl">
+          <div class="bg-slate-800/80 px-4 py-3 border-b border-slate-700 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <span class="w-3 h-3 rounded-full bg-rose-500/80"></span>
+              <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
+              <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
+              <span class="text-xs font-mono text-slate-400 ml-2">Terminal Session Analysis</span>
+            </div>
+            <button onclick="navigator.clipboard.writeText(document.getElementById('terminal-log').innerText); alert('Terminal logs copied to clipboard!')" class="text-xs text-slate-400 hover:text-teal-400 flex items-center space-x-1">
+              <i class="fa-regular fa-copy"></i>
+              <span>Copy Log</span>
+            </button>
+          </div>
+
+          <div id="terminal-log" class="p-4 font-mono text-xs overflow-x-auto text-slate-300 max-h-[640px] custom-scrollbar leading-relaxed">
+<span class="text-slate-500"># 1. Domain resolution timeout</span>
+<span class="text-teal-400">rifat@mac ~ %</span> nslookup google.com
+<span class="text-rose-400">;; connection timed out; no servers could be reached</span>
+
+<span class="text-teal-400">rifat@mac ~ %</span> dig api.anthropic.com +short
+<span class="text-rose-400">;; connection timed out; no servers could be reached</span>
+
+<span class="text-slate-500"># 2. Direct IP check (Proves Layer 3 works!)</span>
+<span class="text-teal-400">rifat@mac ~ %</span> nc -zv 1.1.1.1 443
+<span class="text-emerald-400">Connection to 1.1.1.1 port 443 [tcp/https] succeeded!</span>
+
+<span class="text-teal-400">rifat@mac ~ %</span> nc -zv google.com 443
+<span class="text-rose-400">nc: getaddrinfo: nodename nor servname provided, or not known</span>
+
+<span class="text-slate-500"># 3. macOS Network Setup attempt (Bypassed by scutil order)</span>
+<span class="text-teal-400">rifat@mac ~ %</span> sudo networksetup -setdnsservers "Wi-Fi" 1.1.1.1 8.8.8.8
+<span class="text-teal-400">rifat@mac ~ %</span> nc -zv google.com 443
+<span class="text-rose-400">nc: getaddrinfo: nodename nor servname provided, or not known</span>
+
+<span class="text-slate-500"># 4. scutil reveals Tailscale MagicDNS priority</span>
+<span class="text-teal-400">rifat@mac ~ %</span> scutil --dns
+DNS configuration
+
+<span class="text-amber-300">resolver #1</span>
+  search domain[0] : lan
+  <span class="text-amber-300">nameserver[0] : 100.95.0.251</span>
+  <span class="text-amber-300">nameserver[1] : 100.95.0.252</span>
+  <span class="text-amber-300">nameserver[2] : 100.95.0.253</span>
+  <span class="text-amber-300">nameserver[3] : 100.95.0.254</span>
+  <span class="text-amber-300">if_index : 23 (utun5)</span>
+  flags    : Supplemental, Request A records, Request AAAA records
+  reach    : 0x00000003 (Reachable,Transient Connection)
+  <span class="text-rose-400">order    : 104200  &lt;-- HIGHEST PRIORITY (OVERRIDING WI-FI)</span>
+
+resolver #2
+  nameserver[0] : fdaa:4d:c31d::3
+  order    : 200000
+
+<span class="text-slate-500"># 5. Tailscale disconnected in UI -&gt; Instant recovery</span>
+<span class="text-teal-400">rifat@mac ~ %</span> nc -zv google.com 443
+<span class="text-emerald-400">Connection to google.com port 443 [tcp/https] succeeded!</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Troubleshooting Decision Tree -->
+  <section id="decision-tree" class="py-16 border-b border-slate-800/80 bg-slate-900/40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Interactive Triage Decision Tree</h2>
+        <p class="text-slate-400 text-sm mt-2">Follow the 3-step test sequence to isolate any network connectivity problem in seconds</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Box 1 -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="px-2.5 py-1 rounded-md bg-teal-500/10 text-teal-400 text-xs font-mono font-bold">TEST 1: Layer 3</span>
+              <i class="fa-solid fa-satellite-dish text-slate-500"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Can you reach direct IPs?</h3>
+            <p class="text-xs text-slate-400 mb-4">Test raw IP communication bypassing the DNS subsystem.</p>
+            <div class="bg-slate-950 p-3 rounded-lg font-mono text-xs text-slate-300 border border-slate-800 mb-4">
+              nc -zv 1.1.1.1 443
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-800/80 text-xs space-y-2">
+            <div class="flex items-center text-rose-400">
+              <i class="fa-solid fa-times-circle mr-2"></i>
+              <span><strong>Fails:</strong> Wi-Fi / Router / Gateway issue.</span>
+            </div>
+            <div class="flex items-center text-emerald-400">
+              <i class="fa-solid fa-check-circle mr-2"></i>
+              <span><strong>Passes:</strong> Network is UP! Proceed to Test 2.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Box 2 -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-400 text-xs font-mono font-bold">TEST 2: Layer 7</span>
+              <i class="fa-solid fa-globe text-slate-500"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Does DNS resolve?</h3>
+            <p class="text-xs text-slate-400 mb-4">Test hostname lookup through system resolver libraries.</p>
+            <div class="bg-slate-950 p-3 rounded-lg font-mono text-xs text-slate-300 border border-slate-800 mb-4">
+              nc -zv google.com 443
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-800/80 text-xs space-y-2">
+            <div class="flex items-center text-rose-400">
+              <i class="fa-solid fa-times-circle mr-2"></i>
+              <span><strong>Fails:</strong> DNS Outage! Proceed to Test 3.</span>
+            </div>
+            <div class="flex items-center text-emerald-400">
+              <i class="fa-solid fa-check-circle mr-2"></i>
+              <span><strong>Passes:</strong> Full connectivity is healthy.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Box 3 -->
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="px-2.5 py-1 rounded-md bg-purple-500/10 text-purple-400 text-xs font-mono font-bold">TEST 3: Resolver Order</span>
+              <i class="fa-solid fa-shield-halved text-slate-500"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">Who owns Resolver #1?</h3>
+            <p class="text-xs text-slate-400 mb-4">Inspect macOS DNS hierarchy to find VPN overrides.</p>
+            <div class="bg-slate-950 p-3 rounded-lg font-mono text-xs text-slate-300 border border-slate-800 mb-4">
+              scutil --dns | grep -A 8 "resolver #1"
+            </div>
+          </div>
+          <div class="pt-4 border-t border-slate-800/80 text-xs space-y-2">
+            <div class="flex items-center text-amber-400">
+              <i class="fa-solid fa-triangle-exclamation mr-2"></i>
+              <span><strong>100.95.0.x / utun*:</strong> Tailscale MagicDNS lock.</span>
+            </div>
+            <div class="flex items-center text-teal-400">
+              <i class="fa-solid fa-wrench mr-2"></i>
+              <span><strong>Fix:</strong> Disable MagicDNS or toggle VPN.</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Ready-to-Run Scripts Section -->
+  <section id="scripts" class="py-16 border-b border-slate-800/80 bg-slate-950">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">Diagnostic & Repair Scripts</h2>
+        <p class="text-slate-400 text-sm mt-2">Ready-to-use scripts included in this repository to automate diagnosis and recovery</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Script 1: check-connectivity.sh -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col">
+          <div class="bg-slate-800/90 px-4 py-3 border-b border-slate-700 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <i class="fa-solid fa-terminal text-teal-400 text-sm"></i>
+              <span class="font-mono text-xs font-bold text-white">check-connectivity.sh</span>
+            </div>
+            <button onclick="copyCode('code-check')" class="text-xs text-slate-300 hover:text-teal-400 flex items-center space-x-1">
+              <i class="fa-regular fa-copy"></i>
+              <span>Copy Script</span>
+            </button>
+          </div>
+          <div class="p-4 bg-slate-950 flex-1">
+            <p class="text-xs text-slate-400 mb-3">Runs all 6 checks: Default route, L3 direct IP, L7 DNS resolution, scutil DNS hierarchy, and Tailscale client status.</p>
+            <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 text-xs font-mono text-teal-300 mb-3">
+              ./check-connectivity.sh
+            </div>
+            <pre class="bg-slate-900/50 p-3 rounded-lg border border-slate-800/80 font-mono text-xs text-slate-300 overflow-x-auto max-h-56 custom-scrollbar"><code id="code-check"># Run directly from repo:
+chmod +x check-connectivity.sh
+./check-connectivity.sh
+
+# Or run instantly via curl:
+curl -sSL https://raw.githubusercontent.com/rifaterdemsahin/connectivity-checker/main/check-connectivity.sh | bash</code></pre>
+          </div>
+        </div>
+
+        <!-- Script 2: fix-tailscale-dns.sh -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col">
+          <div class="bg-slate-800/90 px-4 py-3 border-b border-slate-700 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <i class="fa-solid fa-wrench text-amber-400 text-sm"></i>
+              <span class="font-mono text-xs font-bold text-white">fix-tailscale-dns.sh</span>
+            </div>
+            <button onclick="copyCode('code-fix')" class="text-xs text-slate-300 hover:text-teal-400 flex items-center space-x-1">
+              <i class="fa-regular fa-copy"></i>
+              <span>Copy Script</span>
+            </button>
+          </div>
+          <div class="p-4 bg-slate-950 flex-1">
+            <p class="text-xs text-slate-400 mb-3">Locates macOS Tailscale binary, resets DNS overrides (<code class="font-mono text-amber-300">--accept-dns=false</code>), flushes macOS mDNS cache, and verifies connectivity.</p>
+            <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 text-xs font-mono text-amber-300 mb-3">
+              ./fix-tailscale-dns.sh
+            </div>
+            <pre class="bg-slate-900/50 p-3 rounded-lg border border-slate-800/80 font-mono text-xs text-slate-300 overflow-x-auto max-h-56 custom-scrollbar"><code id="code-fix"># Run reset utility:
+chmod +x fix-tailscale-dns.sh
+./fix-tailscale-dns.sh
+
+# Flush macOS DNS cache manually:
+sudo dscacheutil -flushcache
+sudo killall -HUP mDNSResponder</code></pre>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Permanent Prevention & Tailscale Best Practices -->
+  <section id="prevention" class="py-16 bg-slate-950">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">How to Prevent Future Outages</h2>
+        <p class="text-slate-400 text-sm mt-2">Configuration best practices for Tailscale on macOS</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
+          <div class="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 mb-4">
+            <i class="fa-solid fa-terminal text-lg"></i>
+          </div>
+          <h3 class="text-base font-bold text-white mb-2">1. Add CLI Path Alias</h3>
+          <p class="text-xs text-slate-400 mb-3 leading-relaxed">
+            The macOS App Store version installs the binary inside the app bundle. Add an alias in your <code class="font-mono text-slate-200">~/.zshrc</code>:
+          </p>
+          <div class="bg-slate-950 p-2.5 rounded font-mono text-xs text-slate-300 border border-slate-800 overflow-x-auto">
+            alias tailscale="/Applications/Tailscale.app/Contents/MacOS/Tailscale"
+          </div>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
+          <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 mb-4">
+            <i class="fa-solid fa-shield-virus text-lg"></i>
+          </div>
+          <h3 class="text-base font-bold text-white mb-2">2. Disable MagicDNS Override</h3>
+          <p class="text-xs text-slate-400 mb-3 leading-relaxed">
+            If your Tailscale network doesn't need to override public internet DNS, start Tailscale with DNS bypass:
+          </p>
+          <div class="bg-slate-950 p-2.5 rounded font-mono text-xs text-slate-300 border border-slate-800 overflow-x-auto">
+            tailscale up --accept-dns=false
+          </div>
+        </div>
+
+        <div class="p-6 rounded-2xl bg-slate-900/60 border border-slate-800">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-4">
+            <i class="fa-solid fa-sliders text-lg"></i>
+          </div>
+          <h3 class="text-base font-bold text-white mb-2">3. Tailscale Admin Console</h3>
+          <p class="text-xs text-slate-400 mb-3 leading-relaxed">
+            In your Tailscale Admin Console (<a href="https://login.tailscale.com/admin/dns" target="_blank" class="text-teal-400 underline">DNS Settings</a>), configure public fallback DNS servers (like 1.1.1.1 and 8.8.8.8) to prevent deadlocks when nodes are offline.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-8 border-t border-slate-800 bg-slate-950 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-2">
+        <i class="fa-solid fa-shield text-teal-400"></i>
+        <span>Connectivity Checker & Tailscale DNS Post-Mortem</span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <a href="https://github.com/rifaterdemsahin/connectivity-checker" target="_blank" class="hover:text-teal-400 transition-colors">GitHub Repository</a>
+        <span>•</span>
+        <a href="https://github.com/rifaterdemsahin/connectivity-checker/settings/pages" target="_blank" class="hover:text-teal-400 transition-colors">GitHub Pages Settings</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function copyCode(elementId) {
+      const text = document.getElementById(elementId).innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        alert('Copied to clipboard!');
+      });
+    }
+  </script>
+</body>
+</html>
