@@ -163,6 +163,12 @@ elif [ "$FAILURES" -eq 0 ]; then
     echo -e "${GREEN}${BOLD}✅ ALL SYSTEMS HEALTHY!${NC}"
     echo -e "  - Layer 3 IP connectivity is active."
     echo -e "  - DNS resolution is resolving domains correctly."
+    
+    # Optional quick ISP & Latency Telemetry
+    ISP_INFO=$(curl -s --max-time 2 https://ipinfo.io/org 2>/dev/null || true)
+    if [ -n "$ISP_INFO" ]; then
+        echo -e "  - ISP / Network: ${BOLD}${ISP_INFO}${NC}"
+    fi
 else
     echo -e "${RED}${BOLD}❌ NETWORK DISCONNECTED:${NC} Please check your Wi-Fi/Ethernet cable and router."
 fi

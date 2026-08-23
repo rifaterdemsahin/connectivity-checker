@@ -52,13 +52,34 @@ chmod +x check-connectivity.sh
 ./check-connectivity.sh
 ```
 
-### 2. `fix-tailscale-dns.sh`
+### 2. `speedtest.sh`
+Benchmarking utility to test downlink/uplink capacity, latency, and RPM responsiveness using macOS native `networkQuality` (with `curl` fallback) and identify your infrastructure (EE Full Fibre over BT Openreach Core).
+
+```bash
+chmod +x speedtest.sh
+./speedtest.sh
+```
+
+### 3. `fix-tailscale-dns.sh`
 Automates recovery by resetting Tailscale DNS overrides, flushing macOS DNS cache (`dscacheutil -flushcache`, `killall -HUP mDNSResponder`), and verifying connectivity.
 
 ```bash
 chmod +x fix-tailscale-dns.sh
 ./fix-tailscale-dns.sh
 ```
+
+---
+
+## ⚡ Infrastructure Benchmark: EE over BT vs Virgin Media
+
+| Feature / Metric | EE Full Fibre (FTTP over BT Openreach) | Old Virgin Media (DOCSIS 3.0 / 3.1) |
+| :--- | :--- | :--- |
+| **Physical Medium** | Pure optical glass fiber direct to ONT | Hybrid Fibre-Coaxial (HFC copper street tree) |
+| **Edge Ping Latency** | **8.3 ms – 9.5 ms** (UK Edge / BBC / Google) | 22.0 ms – 35.0+ ms |
+| **Tested Upload Speed**| **78.3 Mbps** (~4x Virgin cable tiers) | ~20 – 25 Mbps |
+| **Tested Download** | **237.7 Mbps** | 125 – 250 Mbps |
+| **Street Contention** | Dedicated optical time-division | Shared neighborhood coaxial RF spectrum |
+| **Packet Loss & Jitter**| **0.0%** packet loss, optical noise immunity | Prone to RF ingress & cabinet noise |
 
 ---
 

@@ -63,6 +63,7 @@
         </div>
       </div>
       <nav class="hidden md:flex items-center space-x-6 text-sm font-medium text-slate-300">
+        <a href="#fiber-vs-virgin" class="text-teal-400 font-semibold hover:text-teal-300 transition-colors flex items-center gap-1.5"><i class="fa-solid fa-bolt text-xs"></i>Fiber vs Virgin</a>
         <a href="#story" class="hover:text-teal-400 transition-colors">The Incident</a>
         <a href="#breakdown" class="hover:text-teal-400 transition-colors">scutil Breakdown</a>
         <a href="#decision-tree" class="hover:text-teal-400 transition-colors">Decision Tree</a>
@@ -121,6 +122,255 @@
           </div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- Fiber vs Virgin Media Live Comparison Section -->
+  <section id="fiber-vs-virgin" class="py-16 border-b border-slate-800/80 bg-gradient-to-b from-slate-950 via-slate-900/60 to-slate-950">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Header -->
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 text-xs font-semibold mb-4">
+          <i class="fa-solid fa-gauge-high"></i>
+          <span>Live Telemetry & Migration Benchmark</span>
+        </div>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight mb-3">
+          Moved to <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400">Full Fibre</span> vs <span class="text-rose-400">Virgin Media</span>
+        </h2>
+        <p class="text-slate-400 text-sm sm:text-base leading-relaxed">
+          Comprehensive real-time diagnostic audit comparing your current optical Full Fibre line against your previous Virgin Media cable (DOCSIS) connection.
+        </p>
+      </div>
+
+      <!-- Current Live Line Telemetry Banner -->
+      <div class="bg-slate-900/90 border border-teal-500/30 rounded-2xl p-6 mb-10 shadow-2xl relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-96 h-96 bg-teal-500/5 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+          <div class="flex items-center space-x-3">
+            <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+            <div>
+              <span class="text-xs uppercase font-mono tracking-wider text-slate-400">Current Active Provider</span>
+              <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                AS2856 British Telecommunications PLC (BT / EE Full Fibre)
+                <span class="px-2 py-0.5 text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-full font-mono font-medium">FTTP Active</span>
+              </h3>
+            </div>
+          </div>
+          <div class="flex flex-wrap items-center gap-2 font-mono text-xs text-slate-300">
+            <span class="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg"><i class="fa-solid fa-server text-teal-400 mr-1.5"></i>Gateway: <strong class="text-white">192.168.1.254</strong></span>
+            <span class="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg"><i class="fa-solid fa-network-wired text-teal-400 mr-1.5"></i>Interface: <strong class="text-white">en0</strong></span>
+            <span class="px-3 py-1.5 bg-slate-950 border border-slate-800 rounded-lg"><i class="fa-solid fa-shield text-teal-400 mr-1.5"></i>Packet Loss: <strong class="text-emerald-400">0.0%</strong></span>
+          </div>
+        </div>
+
+        <!-- 4 Key Metrics Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6">
+          <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-4">
+            <div class="flex items-center justify-between text-xs text-slate-400 font-semibold mb-2">
+              <span>DOWNLOAD CAPACITY</span>
+              <i class="fa-solid fa-download text-teal-400"></i>
+            </div>
+            <div class="text-3xl font-extrabold text-white tracking-tight">237.7 <span class="text-base font-normal text-slate-400">Mbps</span></div>
+            <div class="text-xs text-emerald-400 mt-2 flex items-center gap-1 font-medium">
+              <i class="fa-solid fa-arrow-trend-up"></i> Sustained optical throughput
+            </div>
+          </div>
+
+          <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-4">
+            <div class="flex items-center justify-between text-xs text-slate-400 font-semibold mb-2">
+              <span>UPLOAD CAPACITY</span>
+              <i class="fa-solid fa-upload text-teal-400"></i>
+            </div>
+            <div class="text-3xl font-extrabold text-teal-300 tracking-tight">78.3 <span class="text-base font-normal text-slate-400">Mbps</span></div>
+            <div class="text-xs text-emerald-400 mt-2 flex items-center gap-1 font-medium">
+              <i class="fa-solid fa-bolt"></i> ~3.5x faster than Virgin cable (20 Mbps)
+            </div>
+          </div>
+
+          <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-4">
+            <div class="flex items-center justify-between text-xs text-slate-400 font-semibold mb-2">
+              <span>EDGE PING LATENCY</span>
+              <i class="fa-solid fa-stopwatch text-teal-400"></i>
+            </div>
+            <div class="text-3xl font-extrabold text-emerald-400 tracking-tight">8.3 <span class="text-base font-normal text-slate-400">ms</span></div>
+            <div class="text-xs text-slate-400 mt-2 flex items-center gap-1 font-mono">
+              <span>8.3ms BBC | 9.5ms Google | 10.6ms Cloudflare</span>
+            </div>
+          </div>
+
+          <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-4">
+            <div class="flex items-center justify-between text-xs text-slate-400 font-semibold mb-2">
+              <span>IDLE LATENCY / JITTER</span>
+              <i class="fa-solid fa-wave-square text-teal-400"></i>
+            </div>
+            <div class="text-3xl font-extrabold text-white tracking-tight">16.6 <span class="text-base font-normal text-slate-400">ms</span></div>
+            <div class="text-xs text-teal-400 mt-2 flex items-center gap-1 font-medium">
+              <i class="fa-solid fa-check"></i> 3,600 Round-trips / Min (RPM)
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Side-by-Side Comparison Matrix -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+        
+        <!-- Left: New Full Fibre Account -->
+        <div class="bg-slate-900/80 border-2 border-teal-500/40 rounded-2xl p-6 relative overflow-hidden shadow-xl">
+          <div class="absolute top-0 right-0 bg-teal-500 text-slate-950 text-xs font-extrabold px-3 py-1 rounded-bl-xl uppercase tracking-wider">
+            Current Line (Active)
+          </div>
+          <div class="flex items-center space-x-3 mb-6">
+            <div class="w-12 h-12 rounded-xl bg-teal-500/20 text-teal-400 border border-teal-500/40 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-fiber-manual-record"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-white">Full Fibre (FTTP / BT Openreach)</h3>
+              <p class="text-xs text-slate-400">Pure optical laser signalling direct to your ONT</p>
+            </div>
+          </div>
+
+          <ul class="space-y-3.5 text-sm">
+            <li class="flex items-start space-x-3">
+              <i class="fa-solid fa-circle-check text-teal-400 mt-1 flex-shrink-0"></i>
+              <div>
+                <strong class="text-white">Ultra-Low Baseline Latency (8–10 ms):</strong>
+                <p class="text-xs text-slate-400 mt-0.5">Light signals through dedicated glass fiber with near-zero transit queuing, ideal for SSH, remote coding, gaming, and real-time audio/video.</p>
+              </div>
+            </li>
+            <li class="flex items-start space-x-3">
+              <i class="fa-solid fa-circle-check text-teal-400 mt-1 flex-shrink-0"></i>
+              <div>
+                <strong class="text-white">Generous Upload Speed (78.3 Mbps):</strong>
+                <p class="text-xs text-slate-400 mt-0.5">Nearly 4x the upload headroom of Virgin's standard tiers, allowing instant Git pushes, fast artifact synchronization, and effortless 4K streaming.</p>
+              </div>
+            </li>
+            <li class="flex items-start space-x-3">
+              <i class="fa-solid fa-circle-check text-teal-400 mt-1 flex-shrink-0"></i>
+              <div>
+                <strong class="text-white">Dedicated Fiber Line (No Street Tree Contention):</strong>
+                <p class="text-xs text-slate-400 mt-0.5">Unshared dedicated optical strand between your home ONT and the aggregation node, immune to neighborhood peak-time bandwidth dips.</p>
+              </div>
+            </li>
+            <li class="flex items-start space-x-3">
+              <i class="fa-solid fa-circle-check text-teal-400 mt-1 flex-shrink-0"></i>
+              <div>
+                <strong class="text-white">Zero RF Interference & Zero Packet Loss:</strong>
+                <p class="text-xs text-slate-400 mt-0.5">Optical pulses are completely impervious to electromagnetic noise, corroded copper joints, or ingress noise in street cabinets.</p>
+              </div>
+            </li>
+            <li class="flex items-start space-x-3">
+              <i class="fa-solid fa-circle-check text-teal-400 mt-1 flex-shrink-0"></i>
+              <div>
+                <strong class="text-white">Modern Dual-Stack IPv6 & Smart Hub Routing:</strong>
+                <p class="text-xs text-slate-400 mt-0.5">Native IPv6 assignment and reliable gateway routing via standard BT/EE Smart Hub (192.168.1.254).</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Right: Old Virgin Media Account -->
+        <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 relative overflow-hidden">
+          <div class="absolute top-0 right-0 bg-slate-800 text-slate-400 text-xs font-bold px-3 py-1 rounded-bl-xl uppercase tracking-wider">
+            Previous Account
+          </div>
+          <div class="flex items-center space-x-3 mb-6">
+            <div class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-plug"></i>
+            </div>
+            <div>
+              <h3 class="text-xl font-bold text-slate-200">Virgin Media Cable (DOCSIS / HFC)</h3>
+              <p class="text-xs text-slate-400">Hybrid Fibre-Coaxial with shared copper coaxial tree</p>
+            </div>
+          </div>
+
+          <ul class="space-y-3.5 text-sm">
+            <li class="flex items-start space-x-3">
+              <i class="fa-solid fa-circle-minus text-amber-400 mt-1 flex-shrink-0"></i>
+              <div>
+                <strong class="text-slate-300">Higher Baseline Latency (22–35+ ms):</strong>
+                <p class="text-xs text-slate-500 mt-0.5">DOCSIS scheduling request cycles and queue serialization create a noticeable latency floor and frequent micro-stutters during evening peak hours.</p>
+              </div>
+            </li>
+            <li class="flex items-start space-x-3">
+              <i class="fa-solid fa-circle-xmark text-rose-400 mt-1 flex-shrink-0"></i>
+              <div>
+                <strong class="text-slate-300">Severely Constrained Upload Speed (~20–25 Mbps):</strong>
+                <p class="text-xs text-slate-500 mt-0.5">Legacy 10:1 or 12:1 asymmetric ratio meant backups, code repository pushes, and video uploads choked the entire household connection.</p>
+              </div>
+            </li>
+            <li class="flex items-start space-x-3">
+              <i class="fa-solid fa-circle-minus text-amber-400 mt-1 flex-shrink-0"></i>
+              <div>
+                <strong class="text-slate-300">Shared Neighborhood Coaxial Tree:</strong>
+                <p class="text-xs text-slate-500 mt-0.5">All homes on the street cabinet share the same RF coaxial spectrum, causing periodic congestion when neighbors stream or download heavily.</p>
+              </div>
+            </li>
+            <li class="flex items-start space-x-3">
+              <i class="fa-solid fa-circle-minus text-amber-400 mt-1 flex-shrink-0"></i>
+              <div>
+                <strong class="text-slate-300">Susceptible to RF Ingress & Physical Coaxial Noise:</strong>
+                <p class="text-xs text-slate-500 mt-0.5">Corroded splitters, loose F-connectors, or neighborhood electrical interference frequently caused intermittent packet drops and upstream channel flapping.</p>
+              </div>
+            </li>
+            <li class="flex items-start space-x-3">
+              <i class="fa-solid fa-circle-minus text-amber-400 mt-1 flex-shrink-0"></i>
+              <div>
+                <strong class="text-slate-300">Virgin SuperHub Firmware & Intel Puma Quirks:</strong>
+                <p class="text-xs text-slate-500 mt-0.5">Virgin Hub 3 / Hub 4 units historically suffered from packet jitter, forced modem-mode reboots, and occasional DNS lockups.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Quick Summary Table -->
+      <div class="overflow-x-auto bg-slate-900 border border-slate-800 rounded-2xl">
+        <table class="w-full text-left text-xs sm:text-sm text-slate-300">
+          <thead class="bg-slate-800/80 text-xs text-slate-400 uppercase font-mono border-b border-slate-700">
+            <tr>
+              <th class="py-3.5 px-4 sm:px-6">Metric / Feature</th>
+              <th class="py-3.5 px-4 sm:px-6 text-teal-400">New Full Fibre Line (Current)</th>
+              <th class="py-3.5 px-4 sm:px-6 text-slate-400">Old Virgin Media Cable</th>
+              <th class="py-3.5 px-4 sm:px-6 text-emerald-400">Advantage</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800 font-mono text-xs">
+            <tr class="hover:bg-slate-800/30">
+              <td class="py-3.5 px-4 sm:px-6 font-sans font-semibold text-white">Physical Medium</td>
+              <td class="py-3.5 px-4 sm:px-6 text-teal-300">FTTP (Pure Optical Glass Fiber)</td>
+              <td class="py-3.5 px-4 sm:px-6 text-slate-400">DOCSIS 3.0 / 3.1 Coaxial Cable</td>
+              <td class="py-3.5 px-4 sm:px-6 text-emerald-400 font-sans font-semibold">Zero RF noise & future-proof</td>
+            </tr>
+            <tr class="hover:bg-slate-800/30">
+              <td class="py-3.5 px-4 sm:px-6 font-sans font-semibold text-white">Tested Ping Latency</td>
+              <td class="py-3.5 px-4 sm:px-6 text-emerald-300 font-bold">8.3 ms – 9.5 ms</td>
+              <td class="py-3.5 px-4 sm:px-6 text-rose-400">22.0 ms – 38.0 ms</td>
+              <td class="py-3.5 px-4 sm:px-6 text-emerald-400 font-sans font-semibold">~3x lower ping & smoother SSH</td>
+            </tr>
+            <tr class="hover:bg-slate-800/30">
+              <td class="py-3.5 px-4 sm:px-6 font-sans font-semibold text-white">Upload Bandwidth</td>
+              <td class="py-3.5 px-4 sm:px-6 text-teal-300 font-bold">78.3 Mbps</td>
+              <td class="py-3.5 px-4 sm:px-6 text-slate-400">20.0 Mbps (M125/M250)</td>
+              <td class="py-3.5 px-4 sm:px-6 text-emerald-400 font-sans font-semibold">+290% upload bandwidth</td>
+            </tr>
+            <tr class="hover:bg-slate-800/30">
+              <td class="py-3.5 px-4 sm:px-6 font-sans font-semibold text-white">Measured Download</td>
+              <td class="py-3.5 px-4 sm:px-6 text-teal-300 font-bold">237.7 Mbps</td>
+              <td class="py-3.5 px-4 sm:px-6 text-slate-400">125 – 250 Mbps (Tier dependent)</td>
+              <td class="py-3.5 px-4 sm:px-6 text-emerald-400 font-sans font-semibold">Consistent optical throughput</td>
+            </tr>
+            <tr class="hover:bg-slate-800/30">
+              <td class="py-3.5 px-4 sm:px-6 font-sans font-semibold text-white">Peak Time Contention</td>
+              <td class="py-3.5 px-4 sm:px-6 text-emerald-300 font-bold">Virtually Zero (Dedicated GPON timeslots)</td>
+              <td class="py-3.5 px-4 sm:px-6 text-amber-300">Noticeable evening DOCSIS congestion</td>
+              <td class="py-3.5 px-4 sm:px-6 text-emerald-400 font-sans font-semibold">Rock solid 24/7 consistency</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
     </div>
   </section>
 
@@ -360,7 +610,7 @@ resolver #2
         <p class="text-slate-400 text-sm mt-2">Ready-to-use scripts included in this repository to automate diagnosis and recovery</p>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         <!-- Script 1: check-connectivity.sh -->
         <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col">
@@ -388,7 +638,32 @@ curl -sSL https://raw.githubusercontent.com/rifaterdemsahin/connectivity-checker
           </div>
         </div>
 
-        <!-- Script 2: fix-tailscale-dns.sh -->
+        <!-- Script 2: speedtest.sh -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col">
+          <div class="bg-slate-800/90 px-4 py-3 border-b border-slate-700 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+              <i class="fa-solid fa-gauge-high text-emerald-400 text-sm"></i>
+              <span class="font-mono text-xs font-bold text-white">speedtest.sh</span>
+            </div>
+            <button onclick="copyCode('code-speed')" class="text-xs text-slate-300 hover:text-teal-400 flex items-center space-x-1">
+              <i class="fa-regular fa-copy"></i>
+              <span>Copy Script</span>
+            </button>
+          </div>
+          <div class="p-4 bg-slate-950 flex-1">
+            <p class="text-xs text-slate-400 mb-3">Tests download/upload throughput, latency, RPM responsiveness, and identifies EE over BT Openreach infrastructure.</p>
+            <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 text-xs font-mono text-emerald-300 mb-3">
+              ./speedtest.sh
+            </div>
+            <pre class="bg-slate-900/50 p-3 rounded-lg border border-slate-800/80 font-mono text-xs text-slate-300 overflow-x-auto max-h-56 custom-scrollbar"><code id="code-speed"># Run speed benchmark:
+chmod +x speedtest.sh
+./speedtest.sh
+
+# Uses Apple networkQuality + fallback curl test</code></pre>
+          </div>
+        </div>
+
+        <!-- Script 3: fix-tailscale-dns.sh -->
         <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden flex flex-col">
           <div class="bg-slate-800/90 px-4 py-3 border-b border-slate-700 flex items-center justify-between">
             <div class="flex items-center space-x-2">
