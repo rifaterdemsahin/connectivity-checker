@@ -1,15 +1,69 @@
-# 🌐 Connectivity Checker & Tailscale DNS Triage
+# 🌐 Connectivity Checker & Universal DNS Fixer
 
-An incident post-mortem, diagnostic suite, and interactive guide for diagnosing macOS & Linux connectivity failures where **Layer 3 IP routing works** (`1.1.1.1:443`), but **Layer 7 DNS resolution fails** (`google.com:443`) due to VPN/Tailscale MagicDNS resolver overrides.
+An incident post-mortem, diagnostic suite, and interactive triage toolkit for diagnosing macOS & Linux connectivity failures where **Layer 3 IP routing works** (`1.1.1.1:443`), but **Layer 7 DNS resolution fails** (`google.com:443`) due to router DNS timeouts or Tailscale MagicDNS resolver hijacks.
 
 🔗 **Live Web Dashboard:** [https://rifaterdemsahin.github.io/connectivity-checker/](https://rifaterdemsahin.github.io/connectivity-checker/)
+
+---
+
+## ⚡ Instant Emergency Commands
+
+### 1. One-Liner Fix (Copy & Paste into macOS Terminal)
+Sets ultra-fast public DNS (Cloudflare + Google), flushes system cache, and restarts the DNS daemon:
+```bash
+sudo networksetup -setdnsservers Wi-Fi 1.1.1.1 8.8.8.8 1.0.0.1 8.8.4.4 && sudo dscacheutil -flushcache && sudo killall -HUP mDNSResponder
+```
+*(Note: Ensure `-setdnsservers` has the trailing `s`)*
+
+### 2. Automated Diagnostic & Fixer Script
+```bash
+# Run comprehensive diagnostic
+./check-connectivity.sh
+
+# Run universal DNS fixer
+./fix-dns.sh
+```
+
+---
+
+## 📱 Mobile Phone & Gemini Mobile Emergency Runbook
+
+When your laptop is completely offline or DNS-locked, you can use **Gemini on your mobile phone** (connected to cellular 4G/5G) to diagnose and generate exact recovery commands.
+
+### 📋 Gemini Mobile Triage Prompt
+Copy and paste this prompt into the Gemini app on your phone:
+
+```text
+I am troubleshooting network connectivity on my Mac. Here is my status:
+- Layer 3 Direct IP: 1.1.1.1:443 connects successfully via nc / ping
+- Layer 7 DNS Resolution: FAILED (google.com times out, Grok / Anthropic CLI fails)
+- Active Interface: en0 (Wi-Fi)
+- Tailscale / VPN status: Active or Recently Disconnected
+
+Please give me:
+1. The exact terminal command to set Cloudflare (1.1.1.1) and Google (8.8.8.8) DNS on macOS.
+2. The command to flush the macOS DNS cache.
+3. The step-by-step macOS System Settings GUI navigation path to configure DNS manually.
+```
+
+### 📱 Quick Mobile Steps (If you can't run scripts)
+1. **macOS System Settings GUI Fix:**
+   - Go to **System Settings** → **Wi-Fi**.
+   - Click **Details...** next to your connected network.
+   - Select **DNS** in the left sidebar.
+   - Click `+` and add `1.1.1.1`, `8.8.8.8`, `1.0.0.1`, `8.8.4.4`.
+   - Click **OK** → apply changes.
+2. **Flush Cache:**
+   - In Terminal: `sudo dscacheutil -flushcache; sudo killall -HUP mDNSResponder`
+3. **Turn off Tailscale:**
+   - If installed, click the Tailscale menu bar icon and select **Disconnect** (or `tailscale set --accept-dns=false`).
 
 ---
 
 ## 📖 The Incident Story
 
 ### 1. The Symptoms
-- Commands like `nslookup google.com` and `dig api.anthropic.com` timed out.
+- Commands like `nslookup google.com`, `grok`, and `dig api.anthropic.com` timed out.
 - Browsers could not open any web pages.
 
 ### 2. The Breakthrough Finding
@@ -26,33 +80,45 @@ An incident post-mortem, diagnostic suite, and interactive guide for diagnosing 
 - **Conclusion:** Physical Wi-Fi and TCP/IP routing were fully operational. Only the DNS subsystem was failing.
 
 ### 3. The Root Cause
-Running `scutil --dns` revealed that Tailscale's virtual network interface (`utun5` at `100.96.0.2`) had registered Tailscale MagicDNS (`100.95.0.251-254`) as **Resolver #1 with Order 104200**, taking higher priority over the local Wi-Fi DNS resolver (`order 200000`).
+Running `scutil --dns` revealed that Tailscale's virtual network interface (`utun*` at `100.96.0.2`) had registered Tailscale MagicDNS (`100.95.0.251-254`) as **Resolver #1 with Order 104200**, taking higher priority over the local Wi-Fi DNS resolver (`order 200000`).
 
 Because Tailscale's upstream DNS node was unreachable, all DNS queries timed out before falling back.
 
 ### 4. The Resolution
-- Turning off Tailscale in the macOS menu bar destroyed the `utun5` interface and removed Resolver #1 from `scutil`.
-- The system immediately reverted to Wi-Fi DNS, and connectivity was restored instantly.
+- Setting reliable public DNS servers (`1.1.1.1`, `8.8.8.8`) on the active network service (`Wi-Fi`) and flushing `mDNSResponder` restored connectivity immediately.
 
 ---
 
-## 🛠 Included Diagnostic Scripts
+## 🛠 Included Diagnostic & Recovery Scripts
 
 ### 1. `check-connectivity.sh`
 Performs a 6-step automated health check:
-1. Detects default route and active network interface (`en0`, `utun*`).
+1. Detects default route, active interface (`en0`, `utun*`), and local IP addresses.
 2. Tests Layer 3 direct IP connectivity to `1.1.1.1` and `8.8.8.8`.
-3. Tests Layer 7 DNS resolution for `google.com`, `api.anthropic.com`, `github.com`.
-4. Inspects `scutil --dns` hierarchy for MagicDNS / VPN priority hijacking (`order 104200`).
+3. Tests Layer 7 DNS resolution comparing System Resolver vs Direct Anycast (`@1.1.1.1`).
+4. Inspects `scutil --dns` hierarchy and active macOS DNS server settings.
 5. Checks Tailscale CLI and daemon status.
-6. Outputs actionable diagnosis and repair commands.
+6. Generates a **Gemini Mobile Triage Card** ready for copy-pasting into phone AI.
 
 ```bash
 chmod +x check-connectivity.sh
 ./check-connectivity.sh
 ```
 
-### 2. `speedtest.sh`
+### 2. `fix-dns.sh`
+Automated repair utility:
+- Auto-detects the active network service (e.g. `Wi-Fi`, `Ethernet`, `Thunderbolt Bridge`).
+- Disables Tailscale MagicDNS hijacking (`--accept-dns=false`).
+- Applies high-speed public DNS (`1.1.1.1`, `8.8.8.8`, `1.0.0.1`, `8.8.4.4`).
+- Flushes macOS cache (`dscacheutil`, `mDNSResponder`).
+- Verifies resolution against multiple live endpoints.
+
+```bash
+chmod +x fix-dns.sh
+./fix-dns.sh
+```
+
+### 3. `speedtest.sh`
 Benchmarking utility to test downlink/uplink capacity, latency, and RPM responsiveness using macOS native `networkQuality` (with `curl` fallback) and identify your infrastructure (EE Full Fibre over BT Openreach Core).
 
 ```bash
@@ -60,8 +126,8 @@ chmod +x speedtest.sh
 ./speedtest.sh
 ```
 
-### 3. `fix-tailscale-dns.sh`
-Automates recovery by resetting Tailscale DNS overrides, flushing macOS DNS cache (`dscacheutil -flushcache`, `killall -HUP mDNSResponder`), and verifying connectivity.
+### 4. `fix-tailscale-dns.sh`
+Tailscale-focused reset script for disabling VPN DNS overrides and flushing cache.
 
 ```bash
 chmod +x fix-tailscale-dns.sh
