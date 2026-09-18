@@ -24,6 +24,20 @@ sudo networksetup -setdnsservers Wi-Fi 1.1.1.1 8.8.8.8 1.0.0.1 8.8.4.4 && sudo d
 ./fix-dns.sh
 ```
 
+### 3. Permanent Auto-Fix — LaunchDaemon (no more manual flushes)
+
+The recurring failure is a stale resolver cache / `mDNSResponder` after boot or Wi-Fi reconnect — not the DNS settings reverting. Install `com.rifaterdemsahin.dnsfix` **once** (needs `sudo` once) and it re-asserts public DNS + flushes the cache automatically at every boot/login and every 30 minutes:
+
+```bash
+sudo cp com.rifaterdemsahin.dnsfix.plist /Library/LaunchDaemons/
+sudo chown root:wheel /Library/LaunchDaemons/com.rifaterdemsahin.dnsfix.plist
+sudo chmod 644 /Library/LaunchDaemons/com.rifaterdemsahin.dnsfix.plist
+sudo chmod +x dns-daemon-fix.sh
+sudo launchctl bootstrap system /Library/LaunchDaemons/com.rifaterdemsahin.dnsfix.plist
+```
+
+Full write-up, verification and rollback steps: [`reports/dns-daemon-permanent-fix.md`](reports/dns-daemon-permanent-fix.md).
+
 ---
 
 ## 📱 Mobile Phone & Gemini Mobile Emergency Runbook
