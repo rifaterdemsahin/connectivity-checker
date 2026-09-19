@@ -69,7 +69,9 @@
         <a href="#breakdown" class="hover:text-teal-400 transition-colors">scutil Breakdown</a>
         <a href="#decision-tree" class="hover:text-teal-400 transition-colors">Decision Tree</a>
         <a href="#scripts" class="hover:text-teal-400 transition-colors">Diagnostic Script</a>
+        <a href="#project" class="hover:text-teal-400 transition-colors">What's Inside</a>
         <a href="#prevention" class="hover:text-teal-400 transition-colors">Permanent Fix</a>
+        <a href="reports.html" class="hover:text-teal-400 transition-colors">Reports</a>
       </nav>
       <div class="flex items-center space-x-3">
         <a href="https://github.com/rifaterdemsahin/connectivity-checker" target="_blank" class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition-all shadow-sm">
@@ -755,7 +757,7 @@ Give me the exact macOS terminal commands and System Settings steps to fix DNS.<
             </button>
           </div>
           <div class="p-4 bg-slate-950 flex-1">
-            <p class="text-xs text-slate-400 mb-3">Tests L3 direct reach, L7 system DNS, direct Anycast query, and scutil priority order + outputs mobile card.</p>
+            <p class="text-xs text-slate-400 mb-3">Tests L3 direct reach, L7 system DNS, direct Anycast query, scutil priority order, then runs a colorful down/up speed benchmark + outputs a mobile card.</p>
             <pre class="bg-slate-900/50 p-3 rounded-lg border border-slate-800/80 font-mono text-xs text-slate-300 overflow-x-auto max-h-48 custom-scrollbar"><code id="code-check">chmod +x check-connectivity.sh
 ./check-connectivity.sh</code></pre>
           </div>
@@ -813,6 +815,107 @@ sudo killall -HUP mDNSResponder</code></pre>
           </div>
         </div>
 
+      </div>
+    </div>
+  </section>
+
+  <!-- Project Map: Everything in the repo -->
+  <section id="project" class="py-16 border-b border-slate-800/80 bg-gradient-to-b from-slate-950 via-slate-900/40 to-slate-950">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 text-xs font-semibold mb-4">
+          <i class="fa-solid fa-box-open"></i>
+          <span>Repository Map</span>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">What's Inside This Project</h2>
+        <p class="text-slate-400 text-sm mt-2">Every file, what it does, and when to reach for it — from one-shot diagnostics to a permanent self-healing daemon.</p>
+      </div>
+
+      <div class="overflow-x-auto bg-slate-900 border border-slate-800 rounded-2xl mb-10">
+        <table class="w-full text-left text-xs sm:text-sm text-slate-300">
+          <thead class="bg-slate-800/80 text-xs text-slate-400 uppercase font-mono border-b border-slate-700">
+            <tr>
+              <th class="py-3.5 px-4 sm:px-6">File</th>
+              <th class="py-3.5 px-4 sm:px-6">Type</th>
+              <th class="py-3.5 px-4 sm:px-6">What it does</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800 text-xs">
+            <tr class="hover:bg-slate-800/30">
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-teal-300 whitespace-nowrap">check-connectivity.sh</td>
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-slate-400">Diagnostic</td>
+              <td class="py-3.5 px-4 sm:px-6">6-step triage: interface/route → L3 direct IP → L7 DNS (system vs Anycast) → <span class="font-mono">scutil</span> resolver order → Tailscale status → colorful speed benchmark, then a diagnosis + copy-paste Gemini Mobile card.</td>
+            </tr>
+            <tr class="hover:bg-slate-800/30">
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-teal-300 whitespace-nowrap">fix-dns.sh</td>
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-slate-400">Repair</td>
+              <td class="py-3.5 px-4 sm:px-6">Universal fixer: auto-detects the active service, disables Tailscale MagicDNS, applies Cloudflare + Google DNS, flushes the cache, and verifies 4 live endpoints.</td>
+            </tr>
+            <tr class="hover:bg-slate-800/30">
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-teal-300 whitespace-nowrap">fix-tailscale-dns.sh</td>
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-slate-400">Repair</td>
+              <td class="py-3.5 px-4 sm:px-6">Targeted Tailscale reset: locates the app binary, runs <span class="font-mono">--accept-dns=false</span>, flushes <span class="font-mono">mDNSResponder</span>, and re-verifies resolution.</td>
+            </tr>
+            <tr class="hover:bg-slate-800/30">
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-teal-300 whitespace-nowrap">speedtest.sh</td>
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-slate-400">Benchmark</td>
+              <td class="py-3.5 px-4 sm:px-6">Standalone throughput test using Apple <span class="font-mono">networkQuality</span> (with curl fallback), edge latency/jitter, and ISP/ASN identification.</td>
+            </tr>
+            <tr class="hover:bg-slate-800/30">
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-teal-300 whitespace-nowrap">dns-daemon-fix.sh</td>
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-amber-300">Permanent</td>
+              <td class="py-3.5 px-4 sm:px-6">Worker script for the LaunchDaemon: re-asserts public DNS on the active service, flushes the cache, and logs each run.</td>
+            </tr>
+            <tr class="hover:bg-slate-800/30">
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-teal-300 whitespace-nowrap">com.rifaterdemsahin.dnsfix.plist</td>
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-amber-300">Permanent</td>
+              <td class="py-3.5 px-4 sm:px-6">Root LaunchDaemon definition: <span class="font-mono">RunAtLoad</span> + <span class="font-mono">StartInterval 1800</span> so DNS self-heals at boot and every 30 minutes.</td>
+            </tr>
+            <tr class="hover:bg-slate-800/30">
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-teal-300 whitespace-nowrap">index.html</td>
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-slate-400">Docs (this page)</td>
+              <td class="py-3.5 px-4 sm:px-6">The interactive dashboard: incident post-mortem, Fiber vs Virgin benchmark, decision tree, fixer/Gemini cards, script reference, and the repository map.</td>
+            </tr>
+            <tr class="hover:bg-slate-800/30">
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-teal-300 whitespace-nowrap">reports.html + reports/</td>
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-slate-400">Docs</td>
+              <td class="py-3.5 px-4 sm:px-6">Reports hub and the Markdown field reports (e.g. the permanent LaunchDaemon write-up) with evidence, verification, and rollback steps.</td>
+            </tr>
+            <tr class="hover:bg-slate-800/30">
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-teal-300 whitespace-nowrap">README.md</td>
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-slate-400">Docs</td>
+              <td class="py-3.5 px-4 sm:px-6">Entry point: emergency commands, script usage, incident summary, infrastructure benchmark, and GitHub Pages links.</td>
+            </tr>
+            <tr class="hover:bg-slate-800/30">
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-teal-300 whitespace-nowrap">.github/workflows/deploy-pages.yml</td>
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-slate-400">CI/CD</td>
+              <td class="py-3.5 px-4 sm:px-6">GitHub Actions workflow that publishes the static site to GitHub Pages on every push to <span class="font-mono">main</span>.</td>
+            </tr>
+            <tr class="hover:bg-slate-800/30">
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-teal-300 whitespace-nowrap">virgin_vs_ee.jpeg</td>
+              <td class="py-3.5 px-4 sm:px-6 font-mono text-slate-400">Evidence</td>
+              <td class="py-3.5 px-4 sm:px-6">Visual evidence captured during the line migration and benchmark comparison.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
+          <div class="text-xs font-mono font-bold text-teal-400 mb-2">01 · DIAGNOSE</div>
+          <h3 class="text-base font-bold text-white mb-1.5">Find the failing layer</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">Run <code class="font-mono text-teal-300">./check-connectivity.sh</code> to prove whether the fault is Layer 3 (routing), Layer 7 (DNS), or a VPN resolver hijack — with a speed benchmark and a mobile-ready triage card.</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
+          <div class="text-xs font-mono font-bold text-amber-400 mb-2">02 · REPAIR</div>
+          <h3 class="text-base font-bold text-white mb-1.5">Restore resolution now</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">Apply the targeted fix with <code class="font-mono text-amber-300">./fix-dns.sh</code> or <code class="font-mono text-amber-300">./fix-tailscale-dns.sh</code>, or use the one-liner if you just need DNS back immediately.</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
+          <div class="text-xs font-mono font-bold text-emerald-400 mb-2">03 · PREVENT</div>
+          <h3 class="text-base font-bold text-white mb-1.5">Make it self-healing</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">Install the <code class="font-mono text-emerald-300">com.rifaterdemsahin.dnsfix</code> LaunchDaemon once and the cache is re-asserted at boot and every 30 minutes — no more manual flushes.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -875,6 +978,8 @@ sudo killall -HUP mDNSResponder</code></pre>
         <span>Connectivity Checker & Tailscale DNS Post-Mortem</span>
       </div>
       <div class="flex items-center space-x-4">
+        <a href="reports.html" class="hover:text-teal-400 transition-colors">Reports</a>
+        <span>•</span>
         <a href="https://github.com/rifaterdemsahin/connectivity-checker" target="_blank" class="hover:text-teal-400 transition-colors">GitHub Repository</a>
         <span>•</span>
         <a href="https://github.com/rifaterdemsahin/connectivity-checker/settings/pages" target="_blank" class="hover:text-teal-400 transition-colors">GitHub Pages Settings</a>

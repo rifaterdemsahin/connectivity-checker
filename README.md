@@ -3,6 +3,7 @@
 An incident post-mortem, diagnostic suite, and interactive triage toolkit for diagnosing macOS & Linux connectivity failures where **Layer 3 IP routing works** (`1.1.1.1:443`), but **Layer 7 DNS resolution fails** (`google.com:443`) due to router DNS timeouts or Tailscale MagicDNS resolver hijacks.
 
 🔗 **Live Web Dashboard:** [https://rifaterdemsahin.github.io/connectivity-checker/](https://rifaterdemsahin.github.io/connectivity-checker/)
+📄 **Reports Page:** [https://rifaterdemsahin.github.io/connectivity-checker/reports.html](https://rifaterdemsahin.github.io/connectivity-checker/reports.html) · [reports/](reports/)
 
 ---
 
@@ -112,7 +113,9 @@ Performs a 6-step automated health check:
 3. Tests Layer 7 DNS resolution comparing System Resolver vs Direct Anycast (`@1.1.1.1`).
 4. Inspects `scutil --dns` hierarchy and active macOS DNS server settings.
 5. Checks Tailscale CLI and daemon status.
-6. Generates a **Gemini Mobile Triage Card** ready for copy-pasting into phone AI.
+6. Runs a colorful **speed & latency benchmark** (downlink/uplink bars via Apple `networkQuality`, with `curl` fallback).
+
+After the six steps it prints a diagnosis summary and a **Gemini Mobile Triage Card** ready for copy-pasting into phone AI.
 
 ```bash
 chmod +x check-connectivity.sh
@@ -179,8 +182,31 @@ tailscale up --accept-dns=false
 
 ---
 
+## 📂 Project Structure
+
+| File / Folder | Purpose |
+| :--- | :--- |
+| `check-connectivity.sh` | 6-step triage (interface → L3 → L7 DNS → `scutil` order → Tailscale → speed benchmark) + Gemini Mobile card. |
+| `fix-dns.sh` | Universal repair: detects active service, disables Tailscale DNS, sets public DNS, flushes cache, verifies endpoints. |
+| `fix-tailscale-dns.sh` | Targeted Tailscale DNS reset (`--accept-dns=false`) + cache flush + verification. |
+| `speedtest.sh` | Standalone throughput/latency/RPM benchmark via Apple `networkQuality` (curl fallback). |
+| `dns-daemon-fix.sh` | Worker script for the permanent LaunchDaemon (re-assert DNS + flush cache, logs each run). |
+| `com.rifaterdemsahin.dnsfix.plist` | LaunchDaemon definition (`RunAtLoad` + every 30 min) for self-healing DNS. |
+| `index.html` | Interactive dashboard: post-mortem, Fiber vs Virgin benchmark, decision tree, fixer cards, repository map. |
+| `reports.html` + `reports/` | Reports hub and Markdown field reports (evidence, verification, rollback). |
+| `virgin_vs_ee.jpeg` | Visual evidence from the line migration/benchmark. |
+| `.github/workflows/deploy-pages.yml` | GitHub Actions workflow publishing the static site to GitHub Pages. |
+
+---
+
 ## 🚀 GitHub Pages Setup
 
-1. Open repository settings: [GitHub Pages Settings](https://github.com/rifaterdemsahin/connectivity-checker/settings/pages)
-2. Under **Build and deployment > Source**, select **GitHub Actions** (or **Deploy from a branch > main / (root)**).
-3. The page will be published automatically at `https://rifaterdemsahin.github.io/connectivity-checker/`.
+The site is published automatically by GitHub Actions ([`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml)) on every push to `main`.
+
+1. Repository **Settings → Pages** is configured with **Source: GitHub Actions**.
+2. Any push to `main` rebuilds and redeploys the site.
+3. Live URLs:
+   - Dashboard: `https://rifaterdemsahin.github.io/connectivity-checker/`
+   - Reports: `https://rifaterdemsahin.github.io/connectivity-checker/reports.html`
+
+To re-check or change the source manually: [GitHub Pages Settings](https://github.com/rifaterdemsahin/connectivity-checker/settings/pages).

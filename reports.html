@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports — Connectivity Checker</title>
+  <meta name="description" content="Field reports, post-mortems, and benchmark write-ups from the Connectivity Checker & Universal DNS Fixer project.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    pre code { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen">
+
+  <!-- Navigation Bar -->
+  <header class="sticky top-0 z-50 backdrop-blur-md bg-slate-950/80 border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <a href="index.html" class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-teal-500/20">
+          <i class="fa-solid fa-network-wired text-white text-lg"></i>
+        </div>
+        <div>
+          <span class="font-bold text-lg text-white tracking-tight">Connectivity Checker</span>
+          <span class="hidden sm:inline-block ml-2 px-2 py-0.5 text-xs font-semibold bg-teal-500/10 text-teal-400 border border-teal-500/30 rounded-full">Reports</span>
+        </div>
+      </a>
+      <nav class="hidden md:flex items-center space-x-6 text-sm font-medium text-slate-300">
+        <a href="index.html" class="hover:text-teal-400 transition-colors">Home</a>
+        <a href="index.html#fiber-vs-virgin" class="hover:text-teal-400 transition-colors">Fiber vs Virgin</a>
+        <a href="index.html#story" class="hover:text-teal-400 transition-colors">The Incident</a>
+        <a href="index.html#scripts" class="hover:text-teal-400 transition-colors">Scripts</a>
+        <a href="reports.html" class="text-teal-400 font-semibold">Reports</a>
+      </nav>
+      <a href="https://github.com/rifaterdemsahin/connectivity-checker" target="_blank" class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium transition-all shadow-sm">
+        <i class="fa-brands fa-github text-sm"></i>
+        <span>GitHub Repo</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="pt-12 pb-10 border-b border-slate-800/80 bg-gradient-to-b from-slate-900/50 to-slate-950">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 text-xs font-semibold mb-5">
+        <i class="fa-solid fa-file-lines"></i>
+        <span>Field Reports & Post-Mortems</span>
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight mb-5">
+        Every <span class="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-emerald-400">report</span> from the trenches
+      </h1>
+      <p class="text-slate-400 text-base sm:text-lg leading-relaxed max-w-3xl mx-auto">
+        Each write-up captures a real connectivity failure, the diagnostic evidence, the delivered fix, and the verified end state. Reports live in the <code class="text-teal-300 font-mono text-sm">/reports</code> folder of the repository.
+      </p>
+    </div>
+  </section>
+
+  <!-- Reports list -->
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+    <div class="space-y-6">
+
+      <!-- Report: DNS Daemon Permanent Fix -->
+      <article class="bg-slate-900 border border-slate-800 hover:border-teal-500/50 rounded-2xl p-6 sm:p-8 transition-all group">
+        <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+          <div class="flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xl flex-shrink-0">
+              <i class="fa-solid fa-wrench"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-white group-hover:text-teal-300 transition-colors">Permanent DNS Auto-Fix — macOS LaunchDaemon</h2>
+              <div class="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-slate-400 font-mono">
+                <span class="inline-flex items-center gap-1.5"><i class="fa-regular fa-calendar"></i>2026-09-18</span>
+                <span class="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 font-sans font-semibold">LaunchDaemon</span>
+                <span class="px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/30 font-sans font-semibold">Resolved</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="text-sm text-slate-400 leading-relaxed mb-5">
+          The recurring "DNS broke again" failure was a stale <code class="font-mono text-slate-200">mDNSResponder</code> cache after boot / Wi-Fi reconnect — not reverted settings. Delivered a root LaunchDaemon that re-asserts public DNS and flushes the cache at boot and every 30 minutes, removing all manual intervention.
+        </p>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 text-xs">
+          <div class="bg-slate-950 border border-slate-800 rounded-lg p-3">
+            <div class="text-slate-500 font-semibold uppercase mb-1">Fault</div>
+            <div class="text-slate-200 font-mono">Stale resolver cache</div>
+          </div>
+          <div class="bg-slate-950 border border-slate-800 rounded-lg p-3">
+            <div class="text-slate-500 font-semibold uppercase mb-1">Layer</div>
+            <div class="text-slate-200 font-mono">L7 (DNS)</div>
+          </div>
+          <div class="bg-slate-950 border border-slate-800 rounded-lg p-3">
+            <div class="text-slate-500 font-semibold uppercase mb-1">Schedule</div>
+            <div class="text-slate-200 font-mono">RunAtLoad + 30m</div>
+          </div>
+          <div class="bg-slate-950 border border-slate-800 rounded-lg p-3">
+            <div class="text-slate-500 font-semibold uppercase mb-1">Status</div>
+            <div class="text-emerald-400 font-mono">Delivered</div>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <a href="https://github.com/rifaterdemsahin/connectivity-checker/blob/main/reports/dns-daemon-permanent-fix.md" target="_blank"
+             class="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-teal-500/20 transition-all">
+            <i class="fa-solid fa-book-open"></i><span>Read Full Report</span>
+          </a>
+          <a href="https://raw.githubusercontent.com/rifaterdemsahin/connectivity-checker/main/reports/dns-daemon-permanent-fix.md" target="_blank"
+             class="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition-all">
+            <i class="fa-solid fa-code"></i><span>Raw Markdown</span>
+          </a>
+        </div>
+      </article>
+
+      <!-- Report: Fibre vs Virgin benchmark (on homepage) -->
+      <article class="bg-slate-900 border border-slate-800 hover:border-teal-500/50 rounded-2xl p-6 sm:p-8 transition-all group">
+        <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+          <div class="flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 text-xl flex-shrink-0">
+              <i class="fa-solid fa-gauge-high"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-white group-hover:text-teal-300 transition-colors">Full Fibre (EE over BT) vs Virgin Media — Live Benchmark</h2>
+              <div class="flex flex-wrap items-center gap-3 mt-1.5 text-xs text-slate-400 font-mono">
+                <span class="inline-flex items-center gap-1.5"><i class="fa-regular fa-calendar"></i>2026-08-23</span>
+                <span class="px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/30 font-sans font-semibold">Benchmark</span>
+                <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-sans font-semibold">Published</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="text-sm text-slate-400 leading-relaxed mb-5">
+          Measured telemetry comparing the current optical FTTP line against the previous Virgin Media DOCSIS cable: lower latency, ~4x upload headroom, and zero peak-time contention.
+        </p>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 text-xs">
+          <div class="bg-slate-950 border border-slate-800 rounded-lg p-3">
+            <div class="text-slate-500 font-semibold uppercase mb-1">Download</div>
+            <div class="text-teal-300 font-mono text-base font-bold">237.7 Mbps</div>
+          </div>
+          <div class="bg-slate-950 border border-slate-800 rounded-lg p-3">
+            <div class="text-slate-500 font-semibold uppercase mb-1">Upload</div>
+            <div class="text-teal-300 font-mono text-base font-bold">78.3 Mbps</div>
+          </div>
+          <div class="bg-slate-950 border border-slate-800 rounded-lg p-3">
+            <div class="text-slate-500 font-semibold uppercase mb-1">Edge Ping</div>
+            <div class="text-emerald-400 font-mono text-base font-bold">8.3 ms</div>
+          </div>
+          <div class="bg-slate-950 border border-slate-800 rounded-lg p-3">
+            <div class="text-slate-500 font-semibold uppercase mb-1">Packet Loss</div>
+            <div class="text-emerald-400 font-mono text-base font-bold">0.0%</div>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-3">
+          <a href="index.html#fiber-vs-virgin"
+             class="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-500 hover:from-teal-400 hover:to-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-teal-500/20 transition-all">
+            <i class="fa-solid fa-chart-line"></i><span>View Benchmark</span>
+          </a>
+          <a href="https://github.com/rifaterdemsahin/connectivity-checker/blob/main/speedtest.sh" target="_blank"
+             class="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold transition-all">
+            <i class="fa-solid fa-terminal"></i><span>speedtest.sh</span>
+          </a>
+        </div>
+      </article>
+
+      <!-- How to add a report -->
+      <div class="bg-slate-900/50 border border-dashed border-slate-700 rounded-2xl p-6 flex items-start space-x-4">
+        <div class="w-10 h-10 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 flex-shrink-0">
+          <i class="fa-solid fa-plus"></i>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-white mb-1">Adding a new report</h3>
+          <p class="text-sm text-slate-400 leading-relaxed">
+            Drop a Markdown file into <code class="font-mono text-teal-300">reports/</code>, then add an <code class="font-mono text-teal-300">&lt;article&gt;</code> card here. Expected sections: <span class="text-slate-300">Executive Summary, Problem Statement, Root Cause, Files Delivered, Verification, Rollback, Operational Notes</span>.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="py-8 border-t border-slate-800 bg-slate-950 text-center text-xs text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center space-x-2">
+        <i class="fa-solid fa-shield text-teal-400"></i>
+        <span>Connectivity Checker & Tailscale DNS Post-Mortem</span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <a href="index.html" class="hover:text-teal-400 transition-colors">Home</a>
+        <span>•</span>
+        <a href="https://github.com/rifaterdemsahin/connectivity-checker" target="_blank" class="hover:text-teal-400 transition-colors">GitHub Repository</a>
+        <span>•</span>
+        <a href="https://github.com/rifaterdemsahin/connectivity-checker/tree/main/reports" target="_blank" class="hover:text-teal-400 transition-colors">reports/</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
