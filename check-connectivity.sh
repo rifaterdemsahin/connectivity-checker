@@ -17,11 +17,11 @@ MAGENTA='\033[0;35m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-echo -e "${CYAN}${BOLD}"
-echo "================================================================="
-echo "       🌐 Advanced Network Connectivity & DNS Triage Tool        "
-echo "================================================================="
-echo -e "${NC}"
+echo -e "${MAGENTA}${BOLD}=================================================================${NC}"
+echo -e "${CYAN}${BOLD}       🌐 Advanced Network Connectivity & DNS Triage Tool        ${NC}"
+echo -e "${MAGENTA}${BOLD}=================================================================${NC}"
+echo -e "${YELLOW}        ⚡ Lay-3 Reachability  •  🧠 DNS Triage  •  🚀 Speed${NC}"
+echo ""
 
 FAILURES=0
 WARNINGS=0
@@ -166,7 +166,83 @@ else
     echo -e "  ${YELLOW}ℹ${NC} Tailscale CLI not present in PATH."
 fi
 
-# Step 6: Diagnosis & Auto-Fix Trigger
+# Step 6: Speed & Latency Benchmark
+echo -e "\n${BOLD}[6/6] Running Speed & Latency Benchmark (Downlink / Uplink / Ping)...${NC}"
+
+speed_bar() {
+    local value="$1"
+    local max="$2"
+    local color="$3"
+    local width=30
+    awk -v v="$value" -v m="$max" -v w="$width" -v c="$color" '
+        BEGIN {
+            if (m <= 0) m = 1
+            filled = int((v / m) * w)
+            if (filled > w) filled = w
+            if (filled < 0) filled = 0
+            bar = ""
+            for (i = 0; i < w; i++) {
+                if (i < filled) bar = bar "█"
+                else bar = bar "░"
+            }
+            printf "  %s%s %6.1f Mbps\033[0m\n", c, bar, v
+        }'
+}
+
+DL_MBPS=""
+UL_MBPS=""
+PING_MS=""
+RESP_RPM=""
+
+if command -v networkQuality >/dev/null 2>&1; then
+    echo -e "  ${MAGENTA}▶${NC} Querying Apple ${BOLD}networkQuality${NC} engine (takes ~15-30s)..."
+    NQ_OUT=$(networkQuality -s 2>&1 || networkQuality 2>&1 || true)
+    DL_MBPS=$(echo "$NQ_OUT" | grep -i "Downlink capacity" | grep -oE "[0-9]+(\.[0-9]+)?" | head -n 1 || true)
+    UL_MBPS=$(echo "$NQ_OUT" | grep -i "Uplink capacity" | grep -oE "[0-9]+(\.[0-9]+)?" | head -n 1 || true)
+    PING_MS=$(echo "$NQ_OUT" | grep -i "Idle Latency" | grep -oE "[0-9]+(\.[0-9]+)?" | head -n 1 || true)
+    RESP_RPM=$(echo "$NQ_OUT" | grep -i "Responsiveness" | grep -oE "\(([0-9]+) RPM\)" | grep -oE "[0-9]+" | head -n 1 || true)
+fi
+
+if [ -z "$DL_MBPS" ]; then
+    echo -e "  ${BLUE}ℹ${NC} Falling back to Cloudflare multi-stream test..."
+    DL_BPS=$(curl -s -w "%{speed_download}" -o /dev/null --max-time 20 \
+        "https://speed.cloudflare.com/__down?bytes=25000000" 2>/dev/null || echo "0")
+    if [ -n "$DL_BPS" ] && [ "$DL_BPS" != "0" ]; then
+        DL_MBPS=$(awk "BEGIN {printf \"%.1f\", $DL_BPS * 8 / 1000000}")
+    fi
+    UL_BPS=$(head -c 5000000 /dev/zero | curl -s -w "%{speed_upload}" -o /dev/null --max-time 20 \
+        -X POST --data-binary @- "https://speed.cloudflare.com/__up" 2>/dev/null || echo "0")
+    if [ -n "$UL_BPS" ] && [ "$UL_BPS" != "0" ]; then
+        UL_MBPS=$(awk "BEGIN {printf \"%.1f\", $UL_BPS * 8 / 1000000}")
+    fi
+fi
+
+echo ""
+if [ -n "$DL_MBPS" ]; then
+    DL_MBPS=$(awk "BEGIN {printf \"%.1f\", $DL_MBPS}")
+    echo -e "  ${GREEN}${BOLD}▼ DOWNLINK${NC}"
+    speed_bar "$DL_MBPS" 1000 "$GREEN"
+else
+    echo -e "  ${YELLOW}⚠${NC} Downlink measurement unavailable."
+fi
+
+if [ -n "$UL_MBPS" ]; then
+    UL_MBPS=$(awk "BEGIN {printf \"%.1f\", $UL_MBPS}")
+    echo -e "  ${BLUE}${BOLD}▲ UPLINK${NC}"
+    speed_bar "$UL_MBPS" 200 "$BLUE"
+else
+    echo -e "  ${YELLOW}⚠${NC} Uplink measurement unavailable."
+fi
+
+if [ -n "$PING_MS" ]; then
+    PING_MS=$(awk "BEGIN {printf \"%d\", $PING_MS}")
+    echo -e "  ${CYAN}⏱  Idle Latency: ${BOLD}${PING_MS} ms${NC}"
+fi
+if [ -n "$RESP_RPM" ]; then
+    echo -e "  ${MAGENTA}📊 Responsiveness: ${BOLD}${RESP_RPM} RPM${NC}"
+fi
+
+# Step 7: Diagnosis & Auto-Fix Trigger
 echo -e "\n${CYAN}================================================================="
 echo "                       DIAGNOSIS SUMMARY                         "
 echo -e "=================================================================${NC}"
@@ -191,6 +267,9 @@ elif [ "$FAILURES" -eq 0 ]; then
     echo -e "  - Physical Link & Layer 3: ${GREEN}Healthy${NC}"
     echo -e "  - System DNS Resolution:   ${GREEN}Healthy (${SYSTEM_DNS_PASS}/${#DOMAINS[@]} domains resolved)${NC}"
     echo -e "  - Active DNS Servers:      ${BOLD}${CURRENT_MAC_DNS:-Default Router / Anycast}${NC}"
+    if [ -n "$DL_MBPS" ]; then
+        echo -e "  - Throughput:              ${GREEN}${DL_MBPS} Mbps ↓${NC} / ${BLUE}${UL_MBPS:-?} Mbps ↑${NC} (${CYAN}${PING_MS:-?} ms${NC})"
+    fi
 else
     echo -e "${RED}${BOLD}❌ PHYSICAL / ROUTING FAILURE:${NC} Check your Wi-Fi connection or ethernet cable."
 fi
@@ -208,6 +287,7 @@ I am troubleshooting network connectivity on my Mac. Here are my diagnostic resu
 - Direct 1.1.1.1 DNS Query: ${DIRECT_DNS_PASS}/${#DOMAINS[@]} succeeded
 - Current DNS Config: ${CURRENT_MAC_DNS:-DHCP Default}
 - Tailscale utun / MagicDNS: $( [ "$TAILSCALE_UTUN_ACTIVE" = true ] && echo "Active (utun)" || echo "Inactive" )
+- Speed Test: Downlink ${DL_MBPS:-N/A} Mbps | Uplink ${UL_MBPS:-N/A} Mbps | Ping ${PING_MS:-N/A} ms
 Question: What exact macOS Terminal commands or System Settings steps should I take to fix this right now?
 GEMINI_PROMPT
 echo -e "\n${MAGENTA}${BOLD}=================================================================${NC}\n"
